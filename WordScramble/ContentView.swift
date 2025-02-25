@@ -12,6 +12,10 @@ struct ContentView: View {
     @State private var rootWord = ""
     @State private var newWord = ""
     
+    @State private var errorTitle = ""
+    @State private var errorMessage = ""
+    @State private var showingError = false
+    
     var body: some View {
         NavigationStack {
             List {
@@ -32,6 +36,9 @@ struct ContentView: View {
             .navigationTitle(rootWord)
             .onSubmit(addNewWord)
             .onAppear(perform: startGame)
+            .alert(errorTitle, isPresented: $showingError) { } message: {
+                Text(errorMessage)
+            }
         }
     }
     
@@ -40,7 +47,20 @@ struct ContentView: View {
         
         guard answer.count > 0 else {return}
         
-        //extra validation
+        guard isOriginal(word: answer) else {
+            wordError(title: "Word already used", message: "Be more original")
+            return
+        }
+        
+        guard canBeCreated(word: answer) else {
+            wordError(title: "Can't create from word", message: "This word cannot be created from '\(rootWord)'")
+            return
+        }
+        
+        guard isReal(word: answer) else {
+            wordError(title: "Not a real word", message: "You can't just make words up!")
+            return
+        }
         
         withAnimation {
             usedWords.insert(answer, at: 0)
@@ -78,6 +98,21 @@ struct ContentView: View {
             } else {return false}
         }
         return true
+    }
+    
+    //checks if it's a real word
+    func isReal(word: String) -> Bool {
+        let checker = UITextChecker()
+        let range = NSRange(location: 0, length: word.utf16.count)
+        let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
+        
+        return misspelledRange.location == NSNotFound
+    }
+    
+    func wordError(title: String, message: String) {
+        errorTitle = title
+        errorMessage = message
+        showingError = true
     }
 }
 
