@@ -28,6 +28,7 @@ struct ContentView: View {
                     Button("Restart") {
                         startGame()
                     }
+                    .foregroundStyle(.red)
                 }
                 
                 Section {
