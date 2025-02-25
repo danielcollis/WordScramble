@@ -16,12 +16,18 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     
+    @State private var gameScore = 0
+    
     var body: some View {
         NavigationStack {
             List {
                 Section {
                     TextField("Enter your word", text: $newWord)
                         .textInputAutocapitalization(.never)
+                    Text("Score: \(gameScore)")
+                    Button("Restart") {
+                        startGame()
+                    }
                 }
                 
                 Section {
@@ -62,6 +68,8 @@ struct ContentView: View {
             return
         }
         
+        gameScore += answer.count
+        
         withAnimation {
             usedWords.insert(answer, at: 0)
         }
@@ -71,6 +79,8 @@ struct ContentView: View {
     
     //supposed to run as soon as the app opens
     func startGame() {
+        gameScore = 0
+        usedWords = [String]()
         //finds the start.txt file and pulls the strings from it
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
             if let startWords = try? String(contentsOf: startWordsURL, encoding: .utf8) {
